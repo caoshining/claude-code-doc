@@ -53,16 +53,54 @@ claude-code-doc/
 4. **[工具系统](concepts/tool-system.md)** - 了解工具机制
 5. **[源码分析](sources/)** - 深入具体实现
 
-### 使用 Obsidian 阅读
+### 🎨 使用 Obsidian 阅读
 
-推荐使用 [Obsidian](https://obsidian.md) 打开此知识库，获得最佳阅读体验：
+**强烈推荐使用 [Obsidian](https://obsidian.md) 打开此知识库**，获得最佳阅读体验。
+
+#### 为什么选择 Obsidian？
+
+| 特性 | 好处 |
+|------|------|
+| **双向链接** | 文档之间通过 `[[链接]]` 自动关联，点击即可跳转，构建知识网络 |
+| **图谱视图** | 可视化展示文档关联关系，快速理解模块依赖和知识结构 |
+| **快速搜索** | 全文搜索 + 路径搜索 + 标签过滤，秒级定位所需内容 |
+| **反向链接** | 查看哪些文档引用了当前概念，理解上下文和影响范围 |
+| **大纲预览** | 自动生成文档大纲，快速导航到指定章节 |
+| **本地优先** | 完全离线可用，无网络时也能流畅阅读 |
+| **插件生态** | 超过 1000+ 社区插件，可按需扩展功能 |
+| **跨平台** | Windows / macOS / Linux / iOS / Android 全平台同步 |
+
+#### 与其他阅读方式对比
+
+| 方式 | 双向链接 | 图谱视图 | 离线可用 | 搜索能力 | 便携性 |
+|------|----------|----------|----------|----------|--------|
+| Obsidian | ✅ | ✅ | ✅ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
+| GitHub Web | ❌ | ❌ | ❌ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+| VS Code | ✅ | ❌ | ✅ | ⭐⭐⭐⭐ | ⭐⭐⭐ |
+| Markdown 编辑器 | ❌ | ❌ | ✅ | ⭐⭐ | ⭐⭐ |
+
+#### 快速开始
 
 ```bash
-# 克隆仓库
-git clone https://github.com/your-username/claude-code-doc.git
+# 1. 克隆仓库
+git clone https://github.com/caoshining/claude-code-doc.git
 
-# 用 Obsidian 打开 claude-code-doc 目录
+# 2. 下载 Obsidian: https://obsidian.md/download
+
+# 3. 打开 Obsidian，选择 "打开文件夹作为知识库"
+#    选择克隆的 claude-code-doc 目录
+
+# 4. 享受阅读体验！
 ```
+
+#### 推荐插件（可选）
+
+安装后可进一步增强阅读体验：
+
+- **Dataview** - 高级查询和数据视图
+- **Excalidraw** - 手绘架构图
+- **Advanced Tables** - 表格编辑增强
+- **Heatmap Calendar** - 阅读进度追踪
 
 ## 📊 项目统计
 
