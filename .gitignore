@@ -1,0 +1,28 @@
+# Obsidian
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+
+# macOS
+.DS_Store
+
+# Thumbnails
+.Thumbs
+
+# Files that might appear in the root of a volume
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.don'tpresent
+
+# Editor directories and files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Node modules (if any tools are added)
+node_modules/
