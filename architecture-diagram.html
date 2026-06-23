@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Claude Code Best (CCB) - 架构图</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" integrity="sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js" integrity="sha384-en/ztfPSRkGfME4KIm05joYXynqzUgbsG5nMrj/xEFAHXkeZfO3yMK8QQ+mP7p1/" crossorigin="anonymous"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'JetBrains Mono', monospace;
+      background: #020617;
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .header h1 {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #22d3ee 0%, #34d399 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .header .subtitle {
+      font-size: 14px;
+      color: #94a3b8;
+      margin-bottom: 16px;
+    }
+
+    .live-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      color: #34d399;
+      background: rgba(52, 211, 153, 0.1);
+      padding: 4px 12px;
+      border-radius: 20px;
+      border: 1px solid rgba(52, 211, 153, 0.2);
+    }
+
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      background: #34d399;
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .diagram-card {
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 32px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+
+    .toolbar {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      z-index: 100;
+    }
+
+    .toolbar-toggle {
+      width: 36px;
+      height: 36px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid #334155;
+      border-radius: 8px;
+      color: #94a3b8;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .toolbar-toggle:hover {
+      background: #1e293b;
+      color: #e2e8f0;
+    }
+
+    .toolbar-actions {
+      position: absolute;
+      top: 44px;
+      right: 0;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 8px;
+      display: none;
+      gap: 4px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    }
+
+    .toolbar-actions.active {
+      display: flex;
+    }
+
+    .toolbar-btn {
+      padding: 8px 16px;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      color: #94a3b8;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .toolbar-btn:hover {
+      background: #334155;
+      color: #e2e8f0;
+    }
+
+    svg {
+      display: block;
+      margin: 0 auto;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    .card {
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 10px;
+      padding: 20px;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .card-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .card-dot.cyan { background: #22d3ee; }
+    .card-dot.emerald { background: #34d399; }
+    .card-dot.violet { background: #a78bfa; }
+    .card-dot.orange { background: #fb923c; }
+    .card-dot.rose { background: #fb7185; }
+
+    .card h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: #e2e8f0;
+    }
+
+    .card ul {
+      list-style: none;
+    }
+
+    .card li {
+      font-size: 12px;
+      color: #94a3b8;
+      padding: 4px 0;
+      line-height: 1.6;
+    }
+
+    .footer {
+      text-align: center;
+      font-size: 11px;
+      color: #64748b;
+      padding-top: 24px;
+      border-top: 1px solid #1e293b;
+    }
+
+    @media print {
+      .toolbar { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="report-container">
+    <!-- Header -->
+    <div class="header">
+      <h1>Claude Code Best (CCB) 架构</h1>
+      <p class="subtitle">反向工程复刻 Anthropic Claude Code CLI — 终端 AI 编程助手</p>
+      <div class="live-indicator">
+        <span class="live-dot"></span>
+        v2.8.1 · Bun + TypeScript + React Ink
+      </div>
+    </div>
+
+    <!-- Main Architecture Diagram -->
+    <div class="diagram-card" style="position: relative;">
+      <div class="toolbar">
+        <button class="toolbar-toggle" onclick="toggleToolbar()">⋯</button>
+        <div class="toolbar-actions" id="toolbarActions">
+          <button class="toolbar-btn" onclick="copyAsImage()">📋 Copy</button>
+          <button class="toolbar-btn" onclick="downloadPNG()">🖼️ PNG</button>
+          <button class="toolbar-btn" onclick="downloadPDF()">📄 PDF</button>
+        </div>
+      </div>
+
+      <svg viewBox="0 0 1200 1100" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <!-- Background Grid Pattern -->
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+          </pattern>
+
+          <!-- Arrowhead Marker -->
+          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#64748b"/>
+          </marker>
+
+          <!-- Gradient for Main Flow -->
+          <linearGradient id="flowGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.3"/>
+            <stop offset="100%" stop-color="#34d399" stop-opacity="0.3"/>
+          </linearGradient>
+        </defs>
+
+        <!-- Background -->
+        <rect x="0" y="0" width="1200" height="1100" fill="#020617"/>
+        <rect x="0" y="0" width="1200" height="1100" fill="url(#grid)"/>
+
+        <!-- ============================================== -->
+        <!-- LAYER 1: ENTRY POINT (Top) -->
+        <!-- ============================================== -->
+        <g id="entry-layer">
+          <!-- Entry Box -->
+          <rect x="420" y="30" width="360" height="70" rx="8" fill="#0f172a" stroke="#22d3ee" stroke-width="2"/>
+          <text x="600" y="55" fill="#22d3ee" font-size="13" font-weight="700" text-anchor="middle">ENTRY POINT</text>
+          <text x="600" y="75" fill="#94a3b8" font-size="10" text-anchor="middle">cli.tsx → main.tsx</text>
+          <text x="600" y="90" fill="#64748b" font-size="8" text-anchor="middle">Commander.js · Fast-path routing</text>
+        </g>
+
+        <!-- ============================================== -->
+        <!-- LAYER 2: CORE LOOP -->
+        <!-- ============================================== -->
+        <g id="core-loop-layer">
+          <!-- Main Flow Background -->
+          <rect x="50" y="140" width="500" height="480" rx="12" fill="rgba(8, 51, 68, 0.15)" stroke="#22d3ee" stroke-width="1.5" stroke-dasharray="8,4"/>
+          <text x="70" y="165" fill="#22d3ee" font-size="11" font-weight="600">CORE LOOP</text>
+
+          <!-- Query Engine -->
+          <rect x="80" y="190" width="440" height="80" rx="8" fill="#0f172a" stroke="#34d399" stroke-width="2"/>
+          <text x="300" y="220" fill="#34d399" font-size="13" font-weight="700" text-anchor="middle">QueryEngine.ts</text>
+          <text x="300" y="240" fill="#94a3b8" font-size="10" text-anchor="middle">高级编排器 · 会话管理 · 压缩 · 文件历史</text>
+          <text x="300" y="258" fill="#64748b" font-size="8" text-anchor="middle">token tracking · compaction · attribution</text>
+
+          <!-- Query.ts -->
+          <rect x="80" y="310" width="440" height="80" rx="8" fill="#0f172a" stroke="#34d399" stroke-width="2"/>
+          <text x="300" y="340" fill="#34d399" font-size="13" font-weight="700" text-anchor="middle">query.ts</text>
+          <text x="300" y="360" fill="#94a3b8" font-size="10" text-anchor="middle">核心API查询 · 流式响应 · 工具调用处理</text>
+          <text x="300" y="378" fill="#64748b" font-size="8" text-anchor="middle">streaming · tool use · turn loop</text>
+
+          <!-- REPL Screen -->
+          <rect x="80" y="430" width="440" height="80" rx="8" fill="#0f172a" stroke="#22d3ee" stroke-width="2"/>
+          <text x="300" y="460" fill="#22d3ee" font-size="13" font-weight="700" text-anchor="middle">REPL.tsx</text>
+          <text x="300" y="480" fill="#94a3b8" font-size="10" text-anchor="middle">交互式REPL屏幕 · 用户输入 · 消息显示</text>
+          <text x="300" y="498" fill="#64748b" font-size="8" text-anchor="middle">React Ink · permissions · keyboard shortcuts</text>
+
+          <!-- Vertical Arrows in Core Loop -->
+          <line x1="300" y1="270" x2="300" y2="310" stroke="#64748b" stroke-width="2" marker-end="url(#arrowhead)"/>
+          <line x1="300" y1="390" x2="300" y2="430" stroke="#64748b" stroke-width="2" marker-end="url(#arrowhead)"/>
+          <line x1="300" y1="510" x2="300" y2="540" stroke="#64748b" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+          <!-- Feedback Loop Arrow -->
+          <path d="M 520 470 Q 560 470 560 430 L 560 350 Q 560 310 520 270" fill="none" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+          <text x="575" y="370" fill="#22d3ee" font-size="8" transform="rotate(90, 575, 370)">Turn Loop</text>
+        </g>
+
+        <!-- ============================================== -->
+        <!-- LAYER 3: UI SYSTEM (Right) -->
+        <!-- ============================================== -->
+        <g id="ui-layer">
+          <rect x="620" y="140" width="530" height="180" rx="12" fill="rgba(8, 51, 68, 0.15)" stroke="#a78bfa" stroke-width="1.5" stroke-dasharray="8,4"/>
+          <text x="640" y="165" fill="#a78bfa" font-size="11" font-weight="600">UI LAYER (React Ink)</text>
+
+          <!-- Ink Framework -->
+          <rect x="650" y="190" width="490" height="50" rx="8" fill="#0f172a" stroke="#a78bfa" stroke-width="1.5"/>
+          <text x="895" y="215" fill="#a78bfa" font-size="12" font-weight="600" text-anchor="middle">@anthropic/ink (Forked)</text>
+          <text x="895" y="232" fill="#64748b" font-size="8" text-anchor="middle">components · hooks · keybindings · theme · utils</text>
+
+          <!-- Components Directory -->
+          <rect x="650" y="260" width="220" height="50" rx="8" fill="#0f172a" stroke="#94a3b8" stroke-width="1"/>
+          <text x="760" y="282" fill="#94a3b8" font-size="11" font-weight="600" text-anchor="middle">src/components/</text>
+          <text x="760" y="298" fill="#64748b" font-size="8" text-anchor="middle">149 个组件</text>
+
+          <!-- Design System -->
+          <rect x="880" y="260" width="260" height="50" rx="8" fill="#0f172a" stroke="#94a3b8" stroke-width="1"/>
+          <text x="1010" y="282" fill="#94a3b8" font-size="11" font-weight="600" text-anchor="middle">design-system/</text>
+          <text x="1010" y="298" fill="#64748b" font-size="8" text-anchor="middle">Dialog · FuzzyPicker · ProgressBar</text>
+        </g>
+
+        <!-- ============================================== -->
+        <!-- LAYER 4: API PROVIDERS (Right Middle) -->
+        <!-- ============================================== -->
+        <g id="api-layer">
+          <rect x="620" y="360" width="530" height="260" rx="12" fill="rgba(6, 78, 59, 0.15)" stroke="#34d399" stroke-width="1.5" stroke-dasharray="8,4"/>
+          <text x="640" y="385" fill="#34d399" font-size="11" font-weight="600">API LAYER (7 Providers)</text>
+
+          <!-- Main API -->
+          <rect x="650" y="410" width="490" height="40" rx="8" fill="#0f172a" stroke="#34d399" stroke-width="2"/>
+          <text x="895" y="435" fill="#34d399" font-size="12" font-weight="600" text-anchor="middle">src/services/api/claude.ts</text>
+
+          <!-- Providers -->
+          <g id="providers">
+            <rect x="650" y="470" width="110" height="40" rx="6" fill="#0f172a" stroke="#34d399" stroke-width="1"/>
+            <text x="705" y="495" fill="#34d399" font-size="10" text-anchor="middle">firstParty</text>
+
+            <rect x="770" y="470" width="110" height="40" rx="6" fill="#0f172a" stroke="#34d399" stroke-width="1"/>
+            <text x="825" y="495" fill="#34d399" font-size="10" text-anchor="middle">bedrock</text>
+
+            <rect x="890" y="470" width="110" height="40" rx="6" fill="#0f172a" stroke="#34d399" stroke-width="1"/>
+            <text x="945" y="495" fill="#34d399" font-size="10" text-anchor="middle">vertex</text>
+
+            <rect x="650" y="520" width="110" height="40" rx="6" fill="#0f172a" stroke="#34d399" stroke-width="1"/>
+            <text x="705" y="545" fill="#34d399" font-size="10" text-anchor="middle">openai</text>
+
+            <rect x="770" y="520" width="110" height="40" rx="6" fill="#0f172a" stroke="#34d399" stroke-width="1"/>
+            <text x="825" y="545" fill="#34d399" font-size="10" text-anchor="middle">gemini</text>
+
+            <rect x="890" y="520" width="110" height="40" rx="6" fill="#0f172a" stroke="#34d399" stroke-width="1"/>
+            <text x="945" y="545" fill="#34d399" font-size="10" text-anchor="middle">grok</text>
+
+            <rect x="770" y="570" width="230" height="40" rx="6" fill="#0f172a" stroke="#34d399" stroke-width="1"/>
+            <text x="885" y="595" fill="#34d399" font-size="10" text-anchor="middle">foundry</text>
+          </g>
+        </g>
+
+        <!-- ============================================== -->
+        <!-- LAYER 5: TOOL SYSTEM (Left Middle) -->
+        <!-- ============================================== -->
+        <g id="tool-layer">
+          <rect x="50" y="660" width="500" height="200" rx="12" fill="rgba(120, 53, 15, 0.15)" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="8,4"/>
+          <text x="70" y="685" fill="#fbbf24" font-size="11" font-weight="600">TOOL SYSTEM (60+ Tools)</text>
+
+          <!-- Tool Registry -->
+          <rect x="80" y="710" width="440" height="50" rx="8" fill="#0f172a" stroke="#fbbf24" stroke-width="2"/>
+          <text x="300" y="735" fill="#fbbf24" font-size="12" font-weight="600" text-anchor="middle">src/tools.ts → Tool.ts</text>
+          <text x="300" y="752" fill="#64748b" font-size="8" text-anchor="middle">Tool Registry · Interface Definition</text>
+
+          <!-- Builtin Tools Package -->
+          <rect x="80" y="780" width="440" height="60" rx="8" fill="#0f172a" stroke="#fb923c" stroke-width="1.5"/>
+          <text x="300" y="805" fill="#fb923c" font-size="12" font-weight="600" text-anchor="middle">@claude-code-best/builtin-tools</text>
+          <text x="300" y="825" fill="#94a3b8" font-size="9" text-anchor="middle">File/Shell · Agent · Plan · Web/MCP · Schedule · Search</text>
+        </g>
+
+        <!-- ============================================== -->
+        <!-- LAYER 6: SERVICES (Bottom Center) -->
+        <!-- ============================================== -->
+        <g id="services-layer">
+          <rect x="620" y="660" width="530" height="200" rx="12" fill="rgba(6, 78, 59, 0.15)" stroke="#34d399" stroke-width="1.5" stroke-dasharray="8,4"/>
+          <text x="640" y="685" fill="#34d399" font-size="11" font-weight="600">SERVICES LAYER</text>
+
+          <g id="services">
+            <rect x="650" y="710" width="160" height="50" rx="6" fill="#0f172a" stroke="#34d399" stroke-width="1"/>
+            <text x="730" y="735" fill="#34d399" font-size="10" text-anchor="middle">compact/</text>
+            <text x="730" y="750" fill="#64748b" font-size="7" text-anchor="middle">context compression</text>
+
+            <rect x="820" y="710" width="160" height="50" rx="6" fill="#0f172a" stroke="#34d399" stroke-width="1"/>
+            <text x="900" y="735" fill="#34d399" font-size="10" text-anchor="middle">mcp/</text>
+            <text x="900" y="750" fill="#64748b" font-size="7" text-anchor="middle">MCP client</text>
+
+            <rect x="990" y="710" width="150" height="50" rx="6" fill="#0f172a" stroke="#34d399" stroke-width="1"/>
+            <text x="1065" y="735" fill="#34d399" font-size="10" text-anchor="middle">acp/</text>
+            <text x="1065" y="750" fill="#64748b" font-size="7" text-anchor="middle">ACP protocol</text>
+
+            <rect x="650" y="770" width="160" height="50" rx="6" fill="#0f172a" stroke="#a78bfa" stroke-width="1"/>
+            <text x="730" y="795" fill="#a78bfa" font-size="10" text-anchor="middle">analytics/</text>
+            <text x="730" y="810" fill="#64748b" font-size="7" text-anchor="middle">Sentry · Langfuse</text>
+
+            <rect x="820" y="770" width="160" height="50" rx="6" fill="#0f172a" stroke="#fb923c" stroke-width="1"/>
+            <text x="900" y="795" fill="#fb923c" font-size="10" text-anchor="middle">skillSearch/</text>
+            <text x="900" y="810" fill="#64748b" font-size="7" text-anchor="middle">skill discovery</text>
+
+            <rect x="990" y="770" width="150" height="50" rx="6" fill="#0f172a" stroke="#fbbf24" stroke-width="1"/>
+            <text x="1065" y="795" fill="#fbbf24" font-size="10" text-anchor="middle">goal/</text>
+            <text x="1065" y="810" fill="#64748b" font-size="7" text-anchor="middle">continuous drive</text>
+          </g>
+        </g>
+
+        <!-- ============================================== -->
+        <!-- LAYER 7: STATE & BRIDGE (Bottom) -->
+        <!-- ============================================== -->
+        <g id="state-layer">
+          <rect x="50" y="910" width="500" height="150" rx="12" fill="rgba(76, 29, 149, 0.15)" stroke="#a78bfa" stroke-width="1.5" stroke-dasharray="8,4"/>
+          <text x="70" y="935" fill="#a78bfa" font-size="11" font-weight="600">STATE & BRIDGE</text>
+
+          <rect x="80" y="960" width="200" height="50" rx="8" fill="#0f172a" stroke="#a78bfa" stroke-width="1.5"/>
+          <text x="180" y="985" fill="#a78bfa" font-size="11" font-weight="600" text-anchor="middle">AppState + Zustand</text>
+          <text x="180" y="1002" fill="#64748b" font-size="7" text-anchor="middle">state management</text>
+
+          <rect x="300" y="960" width="220" height="50" rx="8" fill="#0f172a" stroke="#fb7185" stroke-width="1.5"/>
+          <text x="410" y="985" fill="#fb7185" font-size="11" font-weight="600" text-anchor="middle">bridge/</text>
+          <text x="410" y="1002" fill="#64748b" font-size="7" text-anchor="middle">Remote Control · ACP · JWT</text>
+
+          <rect x="80" y="1020" width="200" height="30" rx="6" fill="#0f172a" stroke="#94a3b8" stroke-width="1"/>
+          <text x="180" y="1040" fill="#94a3b8" font-size="9" text-anchor="middle">bootstrap/state.ts</text>
+
+          <rect x="300" y="1020" width="220" height="30" rx="6" fill="#0f172a" stroke="#94a3b8" stroke-width="1"/>
+          <text x="410" y="1040" fill="#94a3b8" font-size="9" text-anchor="middle">sessionRunner.ts</text>
+        </g>
+
+        <!-- ============================================== -->
+        <!-- LAYER 8: WORKSPACE PACKAGES (Right Bottom) -->
+        <!-- ============================================== -->
+        <g id="packages-layer">
+          <rect x="620" y="910" width="530" height="150" rx="12" fill="rgba(30, 41, 59, 0.2)" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="8,4"/>
+          <text x="640" y="935" fill="#94a3b8" font-size="11" font-weight="600">MONOREPO PACKAGES (17 workspace)</text>
+
+          <g id="packages">
+            <rect x="650" y="960" width="150" height="40" rx="6" fill="#0f172a" stroke="#94a3b8" stroke-width="1"/>
+            <text x="725" y="985" fill="#94a3b8" font-size="9" text-anchor="middle">@ant/ink</text>
+
+            <rect x="810" y="960" width="150" height="40" rx="6" fill="#0f172a" stroke="#94a3b8" stroke-width="1"/>
+            <text x="885" y="985" fill="#94a3b8" font-size="9" text-anchor="middle">builtin-tools</text>
+
+            <rect x="970" y="960" width="170" height="40" rx="6" fill="#0f172a" stroke="#94a3b8" stroke-width="1"/>
+            <text x="1055" y="985" fill="#94a3b8" font-size="9" text-anchor="middle">acp-link</text>
+
+            <rect x="650" y="1010" width="150" height="40" rx="6" fill="#0f172a" stroke="#94a3b8" stroke-width="1"/>
+            <text x="725" y="1035" fill="#94a3b8" font-size="9" text-anchor="middle">mcp-client</text>
+
+            <rect x="810" y="1010" width="150" height="40" rx="6" fill="#0f172a" stroke="#94a3b8" stroke-width="1"/>
+            <text x="885" y="1035" fill="#94a3b8" font-size="9" text-anchor="middle">remote-control-server</text>
+
+            <rect x="970" y="1010" width="170" height="40" rx="6" fill="#0f172a" stroke="#94a3b8" stroke-width="1"/>
+            <text x="1055" y="1035" fill="#94a3b8" font-size="9" text-anchor="middle">cloud-artifacts</text>
+          </g>
+        </g>
+
+        <!-- ============================================== -->
+        <!-- CONNECTION ARROWS (drawn last to be on top) -->
+        <!-- ============================================== -->
+        <!-- Entry to Core Loop -->
+        <line x1="600" y1="100" x2="600" y2="180" stroke="#64748b" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+        <!-- Core Loop to UI -->
+        <line x1="520" y1="230" x2="640" y2="230" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <line x1="520" y1="350" x2="640" y2="350" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <line x1="520" y1="470" x2="640" y2="470" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+        <!-- Core Loop to API -->
+        <line x1="520" y1="350" x2="640" y2="430" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+        <!-- Core Loop to Tools -->
+        <line x1="300" y1="540" x2="300" y2="710" stroke="#64748b" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+        <!-- Tools to Services -->
+        <line x1="520" y1="760" x2="640" y2="760" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+        <!-- All to State -->
+        <line x1="300" y1="860" x2="300" y2="960" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <line x1="885" y1="860" x2="885" y2="910" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+      </svg>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="cards-grid">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot cyan"></div>
+          <h3>核心循环 (Core Loop)</h3>
+        </div>
+        <ul>
+          <li>• <b>cli.tsx</b>: 入口点，快速路径路由</li>
+          <li>• <b>main.tsx</b>: Commander.js CLI定义</li>
+          <li>• <b>QueryEngine.ts</b>: 高级编排器</li>
+          <li>• <b>query.ts</b>: 核心API查询函数</li>
+          <li>• <b>REPL.tsx</b>: 交互式REPL屏幕</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot orange"></div>
+          <h3>工具系统 (Tool System)</h3>
+        </div>
+        <ul>
+          <li>• 60+ 内置工具 (builtin-tools包)</li>
+          <li>• 文件操作: FileEdit/Read/Write/Grep</li>
+          <li>• Agent系统: Agent/Task/Workflow</li>
+          <li>• Web/MCP: WebFetch/Search/MCP</li>
+          <li>• 调度: CronCreate/Delete/List</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot violet"></div>
+          <h3>Monorepo结构 (17 Packages)</h3>
+        </div>
+        <ul>
+          <li>• <b>@ant/ink</b>: Forked Ink框架</li>
+          <li>• <b>builtin-tools</b>: 内置工具集</li>
+          <li>• <b>acp-link</b>: ACP代理服务器</li>
+          <li>• <b>mcp-client</b>: MCP客户端</li>
+          <li>• <b>cloud-artifacts</b>: HTML托管服务</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot emerald"></div>
+          <h3>API提供商 (7 Providers)</h3>
+        </div>
+        <ul>
+          <li>• <b>firstParty</b>: Anthropic官方</li>
+          <li>• <b>bedrock</b>: AWS Bedrock</li>
+          <li>• <b>vertex</b>: Google Cloud</li>
+          <li>• <b>openai/gemini/grok</b>: 兼容API</li>
+          <li>• <b>foundry</b>: 内部平台</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot rose"></div>
+          <h3>关键特性</h3>
+        </div>
+        <ul>
+          <li>• <b>/goal</b>: 持续驱动直到完成</li>
+          <li>• <b>Artifacts</b>: HTML上传托管</li>
+          <li>• <b>Ultracode</b>: 多Agent编排</li>
+          <li>• <b>Pipe IPC</b>: 群控技术</li>
+          <li>• <b>ACP</b>: IDE协议支持</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot"></div>
+          <h3 style="color: #94a3b8;">技术栈</h3>
+        </div>
+        <ul>
+          <li>• <b>Runtime</b>: Bun (>=1.3.0)</li>
+          <li>• <b>Language</b>: TypeScript</li>
+          <li>• <b>UI</b>: React Ink (Terminal)</li>
+          <li>• <b>Build</b>: Bun.build + Vite</li>
+          <li>• <b>Package</b>: 17 workspace</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <p>Claude Code Best v2.8.1 · 反向工程项目 · 基于 Bun + TypeScript + React Ink</p>
+      <p style="margin-top: 8px;">架构图生成时间: 2026-06-23 · 源码位置: github.com/claude-code-best/claude-code</p>
+    </div>
+  </div>
+
+  <script>
+    function toggleToolbar() {
+      const actions = document.getElementById('toolbarActions');
+      actions.classList.toggle('active');
+    }
+
+    async function copyAsImage() {
+      const { jsPDF } = window.jspdf;
+      const container = document.getElementById('report-container');
+      const rect = container.getBoundingClientRect();
+
+      const canvas = await html2canvas(document.body, {
+        x: rect.left,
+        y: rect.top,
+        width: rect.width,
+        height: rect.height,
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        ignoreElements: (el) => el.classList.contains('toolbar')
+      });
+
+      canvas.toBlob(async (blob) => {
+        try {
+          await navigator.clipboard.write([
+            new ClipboardItem({ 'image/png': blob })
+          ]);
+          alert('已复制到剪贴板!');
+        } catch (err) {
+          console.error('复制失败:', err);
+          alert('复制失败，请尝试下载PNG');
+        }
+      });
+    }
+
+    async function downloadPNG() {
+      const container = document.getElementById('report-container');
+      const rect = container.getBoundingClientRect();
+
+      const canvas = await html2canvas(document.body, {
+        x: rect.left,
+        y: rect.top,
+        width: rect.width,
+        height: rect.height,
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        ignoreElements: (el) => el.classList.contains('toolbar')
+      });
+
+      const link = document.createElement('a');
+      link.download = 'claude-code-best-architecture.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+
+    async function downloadPDF() {
+      const { jsPDF } = window.jspdf;
+      const container = document.getElementById('report-container');
+      const rect = container.getBoundingClientRect();
+
+      const canvas = await html2canvas(document.body, {
+        x: rect.left,
+        y: rect.top,
+        width: rect.width,
+        height: rect.height,
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        ignoreElements: (el) => el.classList.contains('toolbar')
+      });
+
+      const pdf = new jsPDF({
+        orientation: rect.width > rect.height ? 'landscape' : 'portrait',
+        unit: 'px',
+        format: [rect.width, rect.height]
+      });
+
+      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, rect.width, rect.height);
+      pdf.save('claude-code-best-architecture.pdf');
+    }
+  </script>
+</body>
+</html>
