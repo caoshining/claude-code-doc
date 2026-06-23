@@ -6,6 +6,17 @@
 
 这是 [Claude Code Best](https://github.com/claude-code-best/claude-code) 项目的完整源码知识库，采用 Andrej Karpathy 的 LLM Wiki 方法论组织。
 
+## 🏗️ 架构总览
+
+![Claude Code Best 架构图](images/claude-code-best-architecture.png)
+
+<details>
+<summary>📖 查看交互式 HTML 版本（支持导出 PNG/PDF）</summary>
+
+完整的交互式架构图见 [architecture-diagram.html](architecture-diagram.html)，在浏览器中打开可缩放查看，并支持一键导出为 PNG / PDF。
+
+</details>
+
 ## 🎯 Claude Code Best 是什么？
 
 Claude Code Best (CCB) 是一个反向工程复刻 Anthropic 官方 Claude Code CLI 的开源项目，基于 Bun + TypeScript + React Ink 构建。
